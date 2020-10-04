@@ -9,15 +9,18 @@ using Newtonsoft.Json.Linq;
 
 namespace GradeBook.GradeBooks
 {
-    public class BaseGradeBook
+    public abstract class BaseGradeBook
     {
+        public GradeBookType Type { get; set; }
+        public bool IsWeighted { get; set; }
         public string Name { get; set; }
         public List<Student> Students { get; set; }
 
-        public BaseGradeBook(string name)
+        public BaseGradeBook(string name, bool condition)
         {
             Name = name;
             Students = new List<Student>();
+            IsWeighted = condition; 
         }
 
         public void AddStudent(Student student)
@@ -106,20 +109,34 @@ namespace GradeBook.GradeBooks
 
         public virtual double GetGPA(char letterGrade, StudentType studentType)
         {
+            int summary = 0;
             switch (letterGrade)
             {
                 case 'A':
-                    return 4;
+                    summary = 4;
+                    break;
                 case 'B':
-                    return 3;
+                    summary = 3;
+                    break;
                 case 'C':
-                    return 2;
+                    summary = 2;
+                    break;
                 case 'D':
-                    return 1;
+                    summary = 1;
+                    break;
                 case 'F':
-                    return 0;
+                    summary = 0;
+                    break;
             }
-            return 0;
+            if(studentType == StudentType.Honors || studentType == StudentType.DualEnrolled)
+            {
+                if (IsWeighted)
+                {
+                    summary += 1;
+                }
+                
+            }
+            return summary;
         }
 
         public virtual void CalculateStatistics()
@@ -206,6 +223,7 @@ namespace GradeBook.GradeBooks
 
         public virtual char GetLetterGrade(double averageGrade)
         {
+
             if (averageGrade >= 90)
                 return 'A';
             else if (averageGrade >= 80)
